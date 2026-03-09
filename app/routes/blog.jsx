@@ -1,14 +1,5 @@
 import { Form, Link, redirect, useActionData, useLoaderData, useNavigation } from "react-router";
 
-function slugify(value) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
 function getBodyText(body = []) {
   if (!Array.isArray(body)) return "";
   return body
@@ -24,19 +15,17 @@ export async function loader({ request }) {
   const url = new URL(request.url);
   const editId = url.searchParams.get("edit");
   const editPost = posts.find((post) => post._id === editId) || null;
-
   return { posts, editPost };
 }
 
 export async function action({ request }) {
-  const { createPost, deletePost, updatePost } = await import("../lib/sanity.server");
+  const { deletePost, updatePost } = await import("../lib/sanity.server");
   const formData = await request.formData();
   const intent = formData.get("intent");
   const id = String(formData.get("id") || "");
   const title = String(formData.get("title") || "").trim();
-  const slugInput = String(formData.get("slug") || "").trim();
+  const slug = String(formData.get("slug") || "").trim();
   const content = String(formData.get("content") || "").trim();
-  const slug = slugify(slugInput || title);
 
   if (intent === "delete") {
     if (!id) return { error: "Post id is required for delete." };
@@ -44,18 +33,16 @@ export async function action({ request }) {
     return redirect("/blog");
   }
 
-  if (!title || !slug || !content) {
-    return { error: "Title, slug/title, and content are required." };
-  }
-
   if (intent === "update") {
     if (!id) return { error: "Post id is required for update." };
+    if (!title || !slug || !content) {
+      return { error: "Title, slug, and content are required for update." };
+    }
     await updatePost({ id, title, slug, content });
     return redirect("/blog");
   }
 
-  await createPost({ title, slug, content });
-  return redirect("/blog");
+  return { error: "Invalid action." };
 }
 
 export default function Blog() {
@@ -63,7 +50,6 @@ export default function Blog() {
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
-  const isEditing = Boolean(editPost);
 
   return (
     <main className="container py-4">
@@ -74,61 +60,47 @@ export default function Blog() {
         </Link>
       </div>
 
-      <section className="card shadow-sm mb-4">
-        <div className="card-body">
-          <h2 className="h5 card-title">{isEditing ? "Edit Blog Post" : "Create Blog Post"}</h2>
-          <Form method="post" className="row g-3">
-            <input type="hidden" name="intent" value={isEditing ? "update" : "create"} />
-            <input type="hidden" name="id" value={editPost?._id || ""} />
+      {editPost && (
+        <section className="card shadow-sm mb-4">
+          <div className="card-body">
+            <h2 className="h5 card-title">Edit Blog Post</h2>
+            <Form method="post" className="row g-3">
+              <input type="hidden" name="intent" value="update" />
+              <input type="hidden" name="id" value={editPost._id} />
 
-            <div className="col-12">
-              <label className="form-label">Title</label>
-              <input
-                className="form-control"
-                type="text"
-                name="title"
-                defaultValue={editPost?.title || ""}
-                placeholder="Enter blog title"
-                required
-              />
-            </div>
+              <div className="col-12">
+                <label className="form-label">Title</label>
+                <input className="form-control" type="text" name="title" defaultValue={editPost.title || ""} required />
+              </div>
 
-            <div className="col-12">
-              <label className="form-label">Slug (optional)</label>
-              <input
-                className="form-control"
-                type="text"
-                name="slug"
-                defaultValue={editPost?.slug || ""}
-                placeholder="auto-generated-from-title"
-              />
-            </div>
+              <div className="col-12">
+                <label className="form-label">Slug</label>
+                <input className="form-control" type="text" name="slug" defaultValue={editPost.slug || ""} required />
+              </div>
 
-            <div className="col-12">
-              <label className="form-label">Content</label>
-              <textarea
-                className="form-control"
-                name="content"
-                rows={5}
-                defaultValue={getBodyText(editPost?.body)}
-                placeholder="Write your blog content..."
-                required
-              />
-            </div>
+              <div className="col-12">
+                <label className="form-label">Content</label>
+                <textarea
+                  className="form-control"
+                  name="content"
+                  rows={5}
+                  defaultValue={getBodyText(editPost.body)}
+                  required
+                />
+              </div>
 
-            <div className="col-12 d-flex gap-2">
-              <button className="btn btn-dark" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : isEditing ? "Update Post" : "Create Post"}
-              </button>
-              {isEditing && (
+              <div className="col-12 d-flex gap-2">
+                <button className="btn btn-dark" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Update Post"}
+                </button>
                 <Link className="btn btn-outline-secondary" to="/blog">
-                  Cancel Edit
+                  Cancel
                 </Link>
-              )}
-            </div>
-          </Form>
-        </div>
-      </section>
+              </div>
+            </Form>
+          </div>
+        </section>
+      )}
 
       {actionData?.error && (
         <div className="alert alert-danger" role="alert">
