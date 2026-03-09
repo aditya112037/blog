@@ -18,3 +18,65 @@ a {
 a:hover {
   color: #111111;
 }
+
+.card-media {
+  height: 220px;
+  object-fit: cover;
+}
+
+.detail-media {
+  max-height: 460px;
+  object-fit: cover;
+}
+
+.thumb-strip {
+  width: 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.thumb-btn {
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0;
+  cursor: pointer;
+}
+
+.thumb-btn.active {
+  border-color: #111;
+}
+
+.thumb-image {
+  width: 66px;
+  height: 66px;
+  object-fit: cover;
+  display: block;
+  border-radius: 5px;
+}
+
+.product-frame {
+  width: 100%;
+}
+
+.product-main-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+
+.detail-body p {
+  margin-bottom: 0.9rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 991px) {
+  .product-main-image {
+    aspect-ratio: 16 / 10;
+  }
+}

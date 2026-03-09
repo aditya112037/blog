@@ -27,7 +27,7 @@ export const getPosts = () =>
       title,
       "slug": slug.current,
       publishedAt,
-      "imageUrl": image.asset->url,
+      "imageUrls": coalesce(images[].asset->url, []),
       body
     }
   `);
@@ -40,7 +40,7 @@ export const getPostBySlug = (slug) =>
       title,
       "slug": slug.current,
       publishedAt,
-      "imageUrl": image.asset->url,
+      "imageUrls": coalesce(images[].asset->url, []),
       body
     }
     `,

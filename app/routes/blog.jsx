@@ -1,4 +1,4 @@
-import { Form, Link, redirect, useActionData, useLoaderData, useNavigation } from "react-router";
+import { Link, useLoaderData } from "react-router";
 
 function getBodyText(body = []) {
   if (!Array.isArray(body)) return "";
@@ -9,47 +9,15 @@ function getBodyText(body = []) {
     .trim();
 }
 
-export async function loader({ request }) {
+export async function loader() {
   const { getPosts } = await import("../lib/sanity.server");
   const posts = await getPosts();
-  const url = new URL(request.url);
-  const editId = url.searchParams.get("edit");
-  const editPost = posts.find((post) => post._id === editId) || null;
-  return { posts, editPost };
-}
-
-export async function action({ request }) {
-  const { deletePost, updatePost } = await import("../lib/sanity.server");
-  const formData = await request.formData();
-  const intent = formData.get("intent");
-  const id = String(formData.get("id") || "");
-  const title = String(formData.get("title") || "").trim();
-  const slug = String(formData.get("slug") || "").trim();
-  const content = String(formData.get("content") || "").trim();
-
-  if (intent === "delete") {
-    if (!id) return { error: "Post id is required for delete." };
-    await deletePost(id);
-    return redirect("/blog");
-  }
-
-  if (intent === "update") {
-    if (!id) return { error: "Post id is required for update." };
-    if (!title || !slug || !content) {
-      return { error: "Title, slug, and content are required for update." };
-    }
-    await updatePost({ id, title, slug, content });
-    return redirect("/blog");
-  }
-
-  return { error: "Invalid action." };
+  return { posts };
 }
 
 export default function Blog() {
-  const { posts, editPost } = useLoaderData();
-  const actionData = useActionData();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
+  const { posts } = useLoaderData();
+  const fallbackImage = "https://placehold.co/900x450?text=No+Image";
 
   return (
     <main className="container py-4">
@@ -60,65 +28,39 @@ export default function Blog() {
         </Link>
       </div>
 
-      {editPost && (
-        <section className="card shadow-sm mb-4">
-          <div className="card-body">
-            <h2 className="h5 card-title">Edit Blog Post</h2>
-            <Form method="post" className="row g-3">
-              <input type="hidden" name="intent" value="update" />
-              <input type="hidden" name="id" value={editPost._id} />
-
-              <div className="col-12">
-                <label className="form-label">Title</label>
-                <input className="form-control" type="text" name="title" defaultValue={editPost.title || ""} required />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label">Slug</label>
-                <input className="form-control" type="text" name="slug" defaultValue={editPost.slug || ""} required />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label">Content</label>
-                <textarea
-                  className="form-control"
-                  name="content"
-                  rows={5}
-                  defaultValue={getBodyText(editPost.body)}
-                  required
-                />
-              </div>
-
-              <div className="col-12 d-flex gap-2">
-                <button className="btn btn-dark" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Update Post"}
-                </button>
-                <Link className="btn btn-outline-secondary" to="/blog">
-                  Cancel
-                </Link>
-              </div>
-            </Form>
-          </div>
-        </section>
-      )}
-
-      {actionData?.error && (
-        <div className="alert alert-danger" role="alert">
-          {actionData.error}
-        </div>
-      )}
-
       <section className="row g-4">
         {posts.length === 0 && <p className="text-muted">No posts found.</p>}
-        {posts.map((post) => (
+        {posts.map((post, index) => {
+          const imageUrls = Array.isArray(post.imageUrls) ? post.imageUrls : [];
+          const carouselId = `post-carousel-${index}`;
+
+          return (
           <div className="col-12 col-md-6 col-lg-4" key={post._id}>
             <article className="card h-100 shadow-sm">
-              {post.imageUrl && (
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="card-img-top"
-                />
+              {imageUrls.length === 0 && <img src={fallbackImage} className="card-img-top card-media" alt={post.title} />}
+              {imageUrls.length === 1 && <img src={imageUrls[0]} alt={post.title} className="card-img-top card-media" />}
+              {imageUrls.length > 1 && (
+                <div id={carouselId} className="carousel slide" data-bs-ride="carousel">
+                  <div className="carousel-inner">
+                    {imageUrls.map((imageUrl, imageIndex) => (
+                      <div key={`${imageUrl}-${imageIndex}`} className={`carousel-item ${imageIndex === 0 ? "active" : ""}`}>
+                        <img
+                          src={imageUrl}
+                          className="d-block w-100 card-img-top card-media"
+                          alt={`${post.title} ${imageIndex + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button className="carousel-control-prev" type="button" data-bs-target={`#${carouselId}`} data-bs-slide="prev">
+                    <span className="carousel-control-prev-icon" aria-hidden="true" />
+                    <span className="visually-hidden">Previous</span>
+                  </button>
+                  <button className="carousel-control-next" type="button" data-bs-target={`#${carouselId}`} data-bs-slide="next">
+                    <span className="carousel-control-next-icon" aria-hidden="true" />
+                    <span className="visually-hidden">Next</span>
+                  </button>
+                </div>
               )}
 
               <div className="card-body d-flex flex-column">
@@ -132,21 +74,12 @@ export default function Blog() {
                   <Link className="btn btn-dark btn-sm" to={`/blog/${post.slug}`}>
                     Read
                   </Link>
-                  <Link className="btn btn-outline-secondary btn-sm" to={`/blog?edit=${post._id}`}>
-                    Edit
-                  </Link>
-                  <Form method="post" onSubmit={(e) => !window.confirm("Delete this post?") && e.preventDefault()}>
-                    <input type="hidden" name="intent" value="delete" />
-                    <input type="hidden" name="id" value={post._id} />
-                    <button className="btn btn-outline-danger btn-sm" type="submit" disabled={isSubmitting}>
-                      Delete
-                    </button>
-                  </Form>
                 </div>
               </div>
             </article>
           </div>
-        ))}
+        );
+        })}
       </section>
     </main>
   );
