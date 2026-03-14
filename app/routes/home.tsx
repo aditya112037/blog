@@ -1,4 +1,17 @@
-import { Link } from "react-router";
+import { useLoaderData } from "react-router";
+
+import {
+  CaptionStoryCarousel,
+  EditorialSpotlightCarousel,
+  InfiniteReviewRail,
+  normalizeHomeShowcase,
+} from "../components/carousels";
+
+export async function loader() {
+  const { getHomeShowcase } = await import("../lib/sanity.server");
+  const showcase = await getHomeShowcase();
+  return { showcase: normalizeHomeShowcase(showcase) };
+}
 
 export function meta() {
   return [
@@ -8,11 +21,15 @@ export function meta() {
 }
 
 export default function Home() {
+  const { showcase } = useLoaderData<typeof loader>();
+
   return (
-    <main style={{ maxWidth: 960, margin: "0 auto", padding: "1rem" }}>
-      <h1>Home Page</h1>
-      <p>Welcome to your blog frontend.</p>
-      <Link to="/blog">Go to Blog</Link>
+    <main className="container py-5">
+      <section>
+        <InfiniteReviewRail cards={showcase.railCards} />
+        <EditorialSpotlightCarousel slides={showcase.spotlightSlides} />
+        <CaptionStoryCarousel slides={showcase.captionSlides} />
+      </section>
     </main>
   );
 }

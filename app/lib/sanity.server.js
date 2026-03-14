@@ -47,6 +47,55 @@ export const getPostBySlug = (slug) =>
     { slug }
   );
 
+export const getHomeShowcase = () =>
+  readClient.fetch(`
+    *[_type == "homeShowcase"] | order(_updatedAt desc)[0]{
+      "visualBannerSlides": coalesce(visualBannerSlides[]{
+        _key,
+        title,
+        eyebrow,
+        description,
+        buttonLabel,
+        buttonLink,
+        "imageUrl": image.asset->url
+      }, []),
+      "railCards": coalesce(railCards[]{
+        _key,
+        label,
+        stars,
+        link,
+        "imageUrl": image.asset->url
+      }, []),
+      "gallerySlides": coalesce(gallerySlides[]{
+        _key,
+        title,
+        eyebrow,
+        description,
+        buttonLabel,
+        buttonLink,
+        "imageUrl": image.asset->url
+      }, []),
+      "spotlightSlides": coalesce(spotlightSlides[]{
+        _key,
+        title,
+        eyebrow,
+        description,
+        buttonLabel,
+        buttonLink,
+        "imageUrl": image.asset->url
+      }, []),
+      "captionSlides": coalesce(captionSlides[]{
+        _key,
+        title,
+        eyebrow,
+        description,
+        buttonLabel,
+        buttonLink,
+        "imageUrl": image.asset->url
+      }, [])
+    }
+  `);
+
 function toPortableTextBlocks(content) {
   return [
     {
