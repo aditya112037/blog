@@ -1,48 +1,12 @@
 import { Link } from "react-router";
 
-type BannerSlide = {
-  id: number;
-  image: string;
-  eyebrow: string;
-  title: string;
-  copy: string;
-  accent: string;
+import type { CarouselSlide } from "./types";
+
+type Props = {
+  slides: CarouselSlide[];
 };
 
-const slides: BannerSlide[] = [
-  {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80",
-    eyebrow: "Editor pick",
-    title: "Stories shaped like launch campaigns",
-    copy:
-      "Bold layouts, clean reading paths, and a feature panel that keeps the headline visible while the image fills the frame.",
-    accent: "Launch",
-  },
-  {
-    id: 2,
-    image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80",
-    eyebrow: "Fresh drop",
-    title: "Creative banners with consistent image framing",
-    copy:
-      "Every slide uses a fixed media window, so wide or tall uploads stay aligned instead of breaking the banner rhythm.",
-    accent: "Feature",
-  },
-  {
-    id: 3,
-    image:
-      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80",
-    eyebrow: "New format",
-    title: "Read-more promos built into the carousel",
-    copy:
-      "The highlighted side column gives each slide a strong CTA without hiding the image under a heavy full-width overlay.",
-    accent: "Read",
-  },
-];
-
-export function BannerHighlightCarousel() {
+export function BannerHighlightCarousel({ slides }: Props) {
   const carouselId = "bannerHighlightCarousel";
 
   return (
@@ -50,7 +14,7 @@ export function BannerHighlightCarousel() {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div>
           <p className="section-kicker mb-1">Carousel one</p>
-          <h2 className="section-title mb-0">Banner with highlight column</h2>
+          <h2 className="section-title mb-0">Editable banner showcase</h2>
         </div>
         <Link className="btn btn-outline-dark btn-sm rounded-pill px-3" to="/blog">
           Browse blog
@@ -65,7 +29,7 @@ export function BannerHighlightCarousel() {
         <div className="carousel-indicators banner-indicators">
           {slides.map((slide, index) => (
             <button
-              key={slide.id}
+              key={slide._key || index}
               type="button"
               data-bs-target={`#${carouselId}`}
               data-bs-slide-to={index}
@@ -79,7 +43,7 @@ export function BannerHighlightCarousel() {
         <div className="carousel-inner overflow-hidden rounded-5 shadow-lg">
           {slides.map((slide, index) => (
             <div
-              key={slide.id}
+              key={slide._key || index}
               className={`carousel-item ${index === 0 ? "active" : ""}`}
               data-bs-interval="5000"
             >
@@ -87,22 +51,27 @@ export function BannerHighlightCarousel() {
                 <div className="col-lg-8">
                   <div className="banner-image-shell">
                     <img
-                      src={slide.image}
-                      alt={slide.title}
+                      src={slide.imageUrl}
+                      alt={slide.title || "Banner slide"}
                       className="w-100 banner-fixed-image"
                     />
                   </div>
                 </div>
                 <div className="col-lg-4">
                   <div className="banner-copy-panel">
-                    <span className="accent-chip">{slide.accent}</span>
-                    <p className="text-uppercase small fw-semibold text-secondary mb-2">
-                      {slide.eyebrow}
+                    <span className="accent-chip">{slide.eyebrow || "Featured"}</span>
+                    {slide.eyebrow ? (
+                      <p className="text-uppercase small fw-semibold text-secondary mb-2">{slide.eyebrow}</p>
+                    ) : null}
+                    <h3 className="display-6 fw-semibold lh-sm mb-3">
+                      {slide.title || "Update this banner from Sanity"}
+                    </h3>
+                    <p className="text-secondary mb-4">
+                      {slide.description ||
+                        "Use Home Showcase in Sanity to control the image, title, text, and button for this banner."}
                     </p>
-                    <h3 className="display-6 fw-semibold lh-sm mb-3">{slide.title}</h3>
-                    <p className="text-secondary mb-4">{slide.copy}</p>
-                    <Link className="btn btn-dark rounded-pill px-4" to="/blog">
-                      Read more
+                    <Link className="btn btn-dark rounded-pill px-4" to={slide.buttonLink || "/blog"}>
+                      {slide.buttonLabel || "Read more"}
                     </Link>
                   </div>
                 </div>

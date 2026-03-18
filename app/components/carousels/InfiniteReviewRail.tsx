@@ -28,7 +28,7 @@ export function InfiniteReviewRail({ cards }: Props) {
               <a href={card.link || "/blog"} className="review-box-link">
                 <img src={card.imageUrl} alt={card.label} className="review-box-image" />
                 <div className="review-box-body">
-                  <div className="rating-row">{renderStars(card.stars)}</div>
+                  {typeof card.stars === "number" ? <div className="rating-row">{renderStars(card.stars)}</div> : null}
                   <p className="mb-0 fw-semibold">{card.label}</p>
                 </div>
               </a>

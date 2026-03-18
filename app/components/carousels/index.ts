@@ -1,3 +1,4 @@
+export { BannerHighlightCarousel } from "./BannerHighlightCarousel";
 export { CaptionStoryCarousel } from "./CaptionStoryCarousel";
 export { EditorialSpotlightCarousel } from "./EditorialSpotlightCarousel";
 export { fallbackHomeShowcase, normalizeHomeShowcase } from "./defaults";

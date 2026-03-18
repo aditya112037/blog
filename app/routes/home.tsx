@@ -1,6 +1,7 @@
 import { useLoaderData } from "react-router";
 
 import {
+  BannerHighlightCarousel,
   CaptionStoryCarousel,
   EditorialSpotlightCarousel,
   InfiniteReviewRail,
@@ -26,9 +27,12 @@ export default function Home() {
   return (
     <main className="container py-5">
       <section>
-        <InfiniteReviewRail cards={showcase.railCards} />
-        <EditorialSpotlightCarousel slides={showcase.spotlightSlides} />
-        <CaptionStoryCarousel slides={showcase.captionSlides} />
+        {showcase.visualBannerSlides.length > 0 ? <BannerHighlightCarousel slides={showcase.visualBannerSlides} /> : null}
+        {showcase.railCards.length > 0 ? <InfiniteReviewRail cards={showcase.railCards} /> : null}
+        {showcase.spotlightSlides.length > 0 ? (
+          <EditorialSpotlightCarousel slides={showcase.spotlightSlides} />
+        ) : null}
+        {showcase.captionSlides.length > 0 ? <CaptionStoryCarousel slides={showcase.captionSlides} /> : null}
       </section>
     </main>
   );

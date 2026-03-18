@@ -11,7 +11,7 @@ export type CarouselSlide = {
 export type RailCard = {
   _key?: string;
   label: string;
-  stars: number;
+  stars?: number;
   imageUrl: string;
   link?: string;
 };

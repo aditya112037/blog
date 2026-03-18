@@ -27,8 +27,15 @@ export const getPosts = () =>
       title,
       "slug": slug.current,
       publishedAt,
+      excerpt,
       "imageUrls": coalesce(images[].asset->url, []),
-      body
+      body,
+      "contentSections": coalesce(contentSections[]{
+        _key,
+        label,
+        "imageUrl": image.asset->url,
+        body
+      }, [])
     }
   `);
 
@@ -40,8 +47,26 @@ export const getPostBySlug = (slug) =>
       title,
       "slug": slug.current,
       publishedAt,
+      excerpt,
+      storyDetailsTitle,
+      "storyDetails": coalesce(storyDetails, []),
       "imageUrls": coalesce(images[].asset->url, []),
-      body
+      body,
+      "contentSections": coalesce(contentSections[]{
+        _key,
+        label,
+        "imageUrl": image.asset->url,
+        body
+      }, []),
+      "sidebarCards": coalesce(sidebarCards[]{
+        _key,
+        label,
+        title,
+        body,
+        linkLabel,
+        linkHref,
+        "imageUrl": image.asset->url
+      }, [])
     }
     `,
     { slug }
@@ -49,7 +74,7 @@ export const getPostBySlug = (slug) =>
 
 export const getHomeShowcase = () =>
   readClient.fetch(`
-    *[_type == "homeShowcase"] | order(_updatedAt desc)[0]{
+    *[_type == "homeShowcase" && _id == "homeShowcase"][0]{
       "visualBannerSlides": coalesce(visualBannerSlides[]{
         _key,
         title,
@@ -57,14 +82,16 @@ export const getHomeShowcase = () =>
         description,
         buttonLabel,
         buttonLink,
-        "imageUrl": image.asset->url
+        "imageUrl": coalesce(image.asset->url, imageUrl)
       }, []),
       "railCards": coalesce(railCards[]{
         _key,
         label,
         stars,
         link,
-        "imageUrl": image.asset->url
+        "images": coalesce(images[]{
+          "imageUrl": coalesce(image.asset->url, imageUrl)
+        }, [])
       }, []),
       "gallerySlides": coalesce(gallerySlides[]{
         _key,
@@ -73,7 +100,7 @@ export const getHomeShowcase = () =>
         description,
         buttonLabel,
         buttonLink,
-        "imageUrl": image.asset->url
+        "imageUrl": coalesce(image.asset->url, imageUrl)
       }, []),
       "spotlightSlides": coalesce(spotlightSlides[]{
         _key,
@@ -82,7 +109,7 @@ export const getHomeShowcase = () =>
         description,
         buttonLabel,
         buttonLink,
-        "imageUrl": image.asset->url
+        "imageUrl": coalesce(image.asset->url, imageUrl)
       }, []),
       "captionSlides": coalesce(captionSlides[]{
         _key,
@@ -91,7 +118,7 @@ export const getHomeShowcase = () =>
         description,
         buttonLabel,
         buttonLink,
-        "imageUrl": image.asset->url
+        "imageUrl": coalesce(image.asset->url, imageUrl)
       }, [])
     }
   `);
